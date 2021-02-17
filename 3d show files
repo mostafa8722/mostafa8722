@@ -1,1 +1,1552 @@
-dkfjkf
+<template>
+    <div class="files-section mt-5">
+        <div class="card mt-3  mr-5 ml-5 pt-3 pb-3" >
+
+            <div class="card-body text-center">
+
+
+                <div class="col-md-3 col-sm-12 border-left ">
+
+                    <h5 class="blue-color mt-2">{{showName(item.title)}}</h5>
+                    <div class="show-small-file mt-2">
+
+                        <div  v-if="isUploaded"  class="show-canvas">
+                            <loading
+
+                                    :active.sync="isUploaded"
+                                    :opacity="0.4"
+                                    background-color="#ffffff"
+                                    color="#1c99fe"
+                                    :height="30"
+                                    :width="30"
+                                    :is-full-page="false"></loading>
+                        </div>
+                        <div v-if="isUploaded"  class="show-canvas">
+                            <model-stl
+
+                                         :cameraPosition="cameraPosition"
+                                         :cameraRotation="cameraRotation"
+                                         :position="position" :scale="scale"
+                                         v-if="fileExtension(item.title)=='stl'"
+                                         @on-load="onLoad(index)"
+                                         :ref="getRef(index)" :src="getSrc(item.src)"></model-stl>
+
+                            <model-obj
+                                        :position="position"
+                                        :cameraPosition="cameraPosition"
+                                        :cameraRotation="cameraRotation"
+                                        :scale="scale"   v-else-if="fileExtension(item.title)=='obj'"
+                                        @on-load="onLoad(index)" style="width: 200px;height: 100%;border: 1px solid rgb(238, 238, 238);padding: 0px;
+                                   overflow: hidden;margin: 0px 10px;"
+                                        :ref="getRef(index)" :src="item.src"></model-obj>
+                            <img v-else-if="fileExtension(file.title)=='stp' || fileExtension(item.title)=='step'"  style="width: 190px;height: 150px;border: 1px solid rgb(238, 238, 238);padding: 0px;
+                                   overflow: hidden;margin: 0px 10px;" src="https://idesign3d.ir/wp-content/uploads/stp.png" />
+
+
+                        </div>
+
+                        <div   v-if="!isUploaded"  class="show-canvas sssss">
+                            <model-stl
+                                    crossOrigin="use-credentials"
+                                    v-if="fileExtension(item.title)=='stl'"
+                                    @on-load="onLoad(index)"
+                                    :ref="getRef(index)"
+                                    :src="item.src"></model-stl>
+
+                            <model-obj
+                                     v-else-if="fileExtension(item.title)=='obj'"
+                                     @on-load="onLoad(index)"
+                                     :ref="getRef(index)"
+                                  :src="item.src"></model-obj>
+                            <img v-else-if="fileExtension(item.title)=='stp' || fileExtension(item.title)=='step'"  style="width: 190px;height: 150px;border: 1px solid rgb(238, 238, 238);padding: 0px;
+                                   overflow: hidden;margin: 0px 10px;" src="https://idesign3d.ir/wp-content/uploads/stp.png" />
+
+
+                        </div>
+                    </div>
+                    <div>
+                        <img  @click="$emit('showModal',item)" src="/images/zoom.png" class="ml-1 cursor-pointer" alt="ای دیزاین"/>
+                        <img src="/images/review.png" class="ml-1 cursor-pointer" alt="ای دیزاین"/>
+                        <img @click="$emit('deleteItem',item,index)" src="/images/recycle.png" class="ml-1 cursor-pointer" alt="ای دیزاین"/>
+                    </div>
+                    <div class="clearfix"></div>
+
+                    <div class="float-right w-100 text-right mt-2">
+                        <label class="ml-2">ابعاد:</label>
+                       <span class="ltr display-in-block">
+                        <label class="font-vazir color-green">x</label>
+                        <label class="font-vazir margin-r-5  color-blue">{{length}}</label>
+                        <label class="font-vazir color-green" >y</label>
+                        <label class="font-vazir margin-r-5   color-blue">{{width}}</label>
+                        <label class="font-vazir color-green">z</label>
+                        <label class="font-vazir margin-r-5 color-blue">{{height}}</label>
+                       </span>
+                    </div>
+                    <div class="float-right w-100 text-right">
+                        <label class="ml-2">حجم:</label>
+                     <span class="position-relative">
+                            <label class="font-vazir color-green position-absolute label-m3">3</label>
+                        <label class="font-vazir margin-l-5 color-green label-m3">mm</label>
+
+                        <label class="font-vazir margin-l-5 color-blue">{{volume}}</label>
+
+                     </span>
+                    </div>
+
+
+
+                    <div class="float-right w-100 text-right position-relative">
+                        <label class="ml-2">مساحت:</label>
+                        <span class="position-relative">
+                            <label class="font-vazir color-green position-absolute label-m3">2</label>
+                        <label class="font-vazir margin-l-5 color-green label-m3">mm</label>
+
+                        <label class="font-vazir margin-l-5 color-blue">{{surface}}</label>
+
+                     </span>
+                    </div>
+                    <div class="float-right w-100 text-right">
+                        <label class="ml-2">واحد اندازه گیری:</label>
+                        <select >
+                            <option>mm</option>
+                            <option>cm</option>
+                        </select>
+
+                        <span v-if="(length>450 || height>450 || width>450)" class="error-file-size">اندازه قطعه بزرگتر از حداکثر اندازه یکپارجه قابل برینت می باشد قطعه شما باید به صورت چند تکه ساخته شود و سبس به جسبانده شود </span>
+
+
+
+                    </div>
+
+                </div>
+                <div class="col-md-4 col-sm-12 border-left">
+                    <div class="mt-3 w-100 text-center">
+
+                        <label class="float-right color-title-select">انتخاب متریال یا فناوری </label>
+                        <div class="cool-select-box change-material position-relative">
+                            <cool-select class="ltr"
+                                         itemValue="title" itemText="title"
+                                         :items="materials"
+                                         v-model="data.material"
+                                         placeholder="انتخاب متریال یا فناوری "
+                                         disable-search>
+                                <template slot="item" slot-scope="{ item }">
+                                    <div  @click="changeMaterial(item)">
+                                        <span class="float-left ">{{ item.title }}</span>
+                                        <span class="float-right">
+
+                                       <div class="tooltip">
+                                            <font-awesome-icon slot="popover" icon="info-circle" />
+                                            <span class="tooltiptext">{{item.tooltip}}</span>
+                                        </div>
+
+                                    </span>
+
+
+                                    </div>
+                                </template>
+                            </cool-select>
+                            <div class="cool-select-arrow float-right">
+                                <font-awesome-icon slot="popover" icon="angle-down"/>
+                            </div>
+                        </div>
+
+                        <div class="clearfix"></div>
+
+
+                    </div>
+                    <div class="mt-3 w-100 text-center">
+                        <label class="float-right color-title-select">انتخاب رنگ متریال </label>
+
+                        <div class="cool-select-box position-relative">
+
+                            <select  v-model="data.material_color" @change="changeMaterialColor" class="form-control">
+                                <option v-for="color in selected_colors" :value="color">{{color}}</option>
+                            </select>
+
+
+                        </div>
+
+                        <div class="clearfix"></div>
+
+
+                    </div>
+                    <div class="mt-3 w-100 text-center">
+
+                        <label class="display-block text-right font-weight-bold">پس پردازش </label>
+                      <div v-if="isAllowWatering" class="text-right mt-2">
+                          <input type="checkbox" @change="changeWatering" />
+                          <label class="margin-r-5">آب بندی</label>
+                          <div class="tooltip display-inline">
+                              <font-awesome-icon slot="popover" icon="info-circle" />
+                              <span class="tooltiptext">قطعات پرینت سه بعدی شده FDM لزوما آب بند یا هوا بند نیستند، در صورتی که نیاز به آب بندی وجود دارد با پس پردازش قطعه آب بند می‌شود.</span>
+
+                          </div>
+                      </div>
+                        <div v-if="isAllowPolish" class="text-right mt-2">
+                            <input @change="checkPolish" type="checkbox"  />
+                            <label class="margin-r-5">پولیش</label>
+                            <div class="tooltip display-inline">
+                                <font-awesome-icon slot="popover" icon="info-circle" />
+                                <span class="tooltiptext">برای افزایش صافی سطح قطعات پرینت شده به صورت دستی یا ماشینی صورت می‌گیرد و ممکن است دقت ابعادی قطعه را تحت تاثیر قرار دهد.</span>
+                            </div>
+                        </div>
+                        <div v-if="is_polish && isAllowPolish" class="text-right p-r-15  p-b-10">
+                            <label  class="margin-r-5 color-red font-12">پولیش قطعه ممکن است دقت ابعادی قطعه را تحت تاثیر قرار دهد و لبه های تیز قطعه ا از بین ببرد - با توجه به دستی بودن پولیش باید قطعه مورد نظر امکان پولیش دستی را داشته باشد</label>
+                            <input type="radio" id="male" v-model="item.polish_level"  @change="changePolish" name="polish" value="all">
+                            <label for="male" class="color-blue">تماس سطوح</label><br>
+                            <input type="radio" id="female" v-model="item.polish_level" @change="changePolish" name="polish" value="a">
+                            <label for="female" class="color-blue">سطح A</label>
+                            <span v-if="item.polish_level=='a'" class="upload-a-level">
+                                <input  @change="uploadFileIndex($event,'polish')" type="file" />
+                                <label>آپلود راهنمای سطح A</label>
+                            </span>
+                          <a v-if="upload_polish_level_A!=''" :href="upload_polish_level_A" target="_blank">
+                              <font-awesome-icon slot="popover" icon="download" />
+                          </a>
+
+                        </div>
+                        <div v-if="isAllowColorSpread" class="text-right mt-2">
+                            <input @change="checkColorSpread" type="checkbox"  />
+                            <label class="margin-r-5">رنگ پاششی</label>
+                            <div class="tooltip display-inline">
+                                <font-awesome-icon slot="popover" icon="info-circle" />
+
+                                <span class="tooltiptext">نوع رنگ خودرویی می‌باشد و به صورت پوشش روی سطح قطعه قرار می‌گیرد. ظاهری مانند قطعات تزریق پلاستیک به قطعه می‌بخشد.</span>
+                            </div>
+                        </div>
+                        <div v-if="is_color_spread && isAllowColorSpread" class="text-right p-r-15 p-t-10 p-b-10">
+                            <input type="radio" @change="changeColorSpread"  v-model="item.spread_level" name="colorspread" value="all">
+                            <label for="male" class="color-blue">تماس سطوح</label><br>
+                            <input type="radio"   @change="changeColorSpread" v-model="item.spread_level"  name="colorspread" value="b" >
+                            <label for="female" class="color-blue">سطح B</label>
+                            <span v-if="item.spread_level=='b'" class="upload-a-level">
+                                <input  @change="uploadFileIndex($event,'color_spread')"  type="file" />
+                                <label>آپلود راهنمای سطح B</label>
+                            </span>
+                            <a v-if="upload_spread_level_B!=''" :href="upload_spread_level_B" target="_blank">
+                                <font-awesome-icon slot="popover" icon="download" />
+                            </a>
+                            <br>
+                            <div class="cool-select-box position-relative mb-3">
+
+                                <label class="float-right color-title-select">نوع رنگ پاششی </label>
+                                <select @change="changeTypeColorSpread"  v-model="data.color_spread_type" class="form-control">
+                                    <option v-for="color in colors_polish" :value="color">{{color}}</option>
+                                </select>
+
+                            </div>
+                            <br>
+                            <div class="cool-select-box position-relative mb-3">
+
+                                <label class="float-right color-title-select">RAL </label>
+                                <select @change="changeRal"  v-model="data.Ral" class="form-control">
+                                    <option v-for="ral in RAL" :value="ral">{{ral}}</option>
+                                </select>
+
+                            </div>
+
+                        </div>
+                        <div class="cool-select-box position-relative">
+
+                            <label class="float-right mt-2 color-title-select">تعداد </label>
+                            <number-input
+
+                                    :min="1"
+                                    :max="20"
+                                    :value="1"
+                                    v-on:change="changeNumber"
+                                    center
+                                    inline controls
+                            ></number-input>
+
+                        </div>
+                        <div class="clearfix"></div>
+
+
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-sm-12">
+
+                    <div class="mt-3 w-100 text-center">
+
+
+                        <div v-if="isAllowAdvanceSettings"  class="text-right mt-2">
+                            <input  @change="checkAdvanceSetting" type="checkbox"  />
+                            <label class="margin-r-5">تنظیمات پیشرفته</label>
+                        </div>
+
+
+                        <div v-if="is_advance_setttings && isAllowAdvanceSettings"  class="text-right p-r-15 float-right ">
+                          <div >
+                              <label class="float-right  color-title-select">تراکم </label>
+
+                              <select  v-model="data.advance_setting1" @change="changeAdvanceSettings"  class="form-control">
+                                  <option v-for="item in advance_settings.setting1" :value="item">{{item}}%</option>
+                              </select>
+
+                              <label class="float-right mt-3 color-title-select">ضخامت لایه </label>
+                              <select  v-model="data.advance_setting2"  @change="changeAdvanceSettings"  class="form-control">
+                                  <option v-for="item in advance_settings.setting2" :value="item">{{item}}میکرومتر</option>
+                              </select>
+
+                              <label class="float-right mt-3 color-title-select">دیواره بیرونی </label>
+                              <select  v-model="data.advance_setting3"  @change="changeAdvanceSettings"  class="form-control">
+                                  <option v-for="item in advance_settings.setting3" :value="item">{{item}}</option>
+                              </select>
+
+                              <label class="float-right mt-3 color-title-select">رزولوشن پرینت </label>
+                              <select  v-model="data.advance_setting4"   @change="changeAdvanceSettings" class="form-control">
+                                  <option v-for="item in advance_settings.setting4" :value="item">{{item}}</option>
+                              </select>
+                          </div>
+
+
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="text-right">
+                            <div  class="text-right mt-3 float-right">
+                                <input type="checkbox" @change="CheckIntegration"  />
+                                <label class="margin-r-5 display-inline">قطعه ی حتما به صورت یکپارچه ساخته شود</label>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+
+                    </div>
+                    <div class="mt-5  text-center border-price">
+                        <label class="text-right">قیمت پایه</label>
+                        <div class=" text-center">
+                            <label class="ml-1 text-right text-green">{{showPrice(data.unit_price)}}</label>
+                            <label class="ml-1 text-right">تومان</label>
+                        </div>
+                    </div>
+                    <div class="mt-2  text-center border-price">
+                        <label class="text-right">قیمت کل</label>
+                        <div class=" text-center">
+                            <label class="ml-1 text-right text-green">{{showPrice(data.total_price)}}</label>
+                            <label class="ml-1 text-right">تومان</label>
+                        </div>
+                    </div>
+
+                    <div class="mt-2  text-center border-price">
+                        <label class="text-right">زمان</label>
+                        <div class=" text-center">
+                            <label class="ml-1 text-right text-green">{{(data.lead_time)}}</label>
+
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+
+
+    import Vue from "vue"
+    import Loading from 'vue-loading-overlay';
+    import {mapGetters } from 'vuex' ;
+    import 'vue-loading-overlay/dist/vue-loading.css';
+
+    var THREE = require('three')
+    var STLLoader  = require('three-stl-loader')(THREE)
+    var OBJLoader  = require('three-obj-loader')(THREE)
+    const OrbitControls = require('three-orbitcontrols')
+
+
+
+
+    import { ModelStl,ModelObj } from 'vue-3d-model';
+    let numeral = require('numeral');
+    import { Box3} from 'three';
+    import { CoolSelectPlugin } from 'vue-cool-select'
+
+    // paste the line below only if you need "bootstrap" theme
+    import 'vue-cool-select/dist/themes/bootstrap.css'
+    // paste the line below only if you need "material-design" theme
+    import 'vue-cool-select/dist/themes/material-design.css'
+    // you can also import your theme
+
+    Vue.use(CoolSelectPlugin)
+    import {CoolSelect} from 'vue-cool-select'
+
+    import { library } from '@fortawesome/fontawesome-svg-core'
+    import { faInfoCircle ,faAngleDown,faDownload} from '@fortawesome/free-solid-svg-icons'
+    import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+
+    library.add(faInfoCircle,faAngleDown,faDownload)
+
+    Vue.component('font-awesome-icon', FontAwesomeIcon)
+
+    import VueNumberInput from '@chenfengyuan/vue-number-input';
+    Vue.use(VueNumberInput);
+    export default {
+        name: "Information",
+        props :["item","index"],
+        computed : {
+            ...mapGetters([
+                'getItems','isUploaded','allMatrials'])},
+        components: {
+            ModelObj,
+            Loading,
+            ModelStl,
+            CoolSelect
+        },
+        mounted(){
+
+
+
+        },
+        data() {
+            return {
+
+                isLoading: true,
+                data :
+                    {material : "PLA (FDM)",
+                        material_color:"سفید",
+                        advance_settings:false,
+                        advance_setting1:20,
+                        advance_setting2:200,
+                        advance_setting3:2,
+                        advance_setting4:"معمولی",
+                        color_spread_type : "مات",
+                        unit_price :1000,
+                        number :1000,
+                        unit_price :0,
+                        total_price :0,
+                        lead_time :0,
+                        Ral : 1,
+                    },
+
+                 isAllowAdvanceSettings : true,
+                 isAllowWatering : true,
+                isAllowColorSpread : true,
+                isAllowPolish : true,
+                selected_colors: ['سفید', 'مشکی', 'قرمز', 'آبی', 'زرد', 'صورتی'],
+                is_polish :false,
+                is_color_spread :false,
+                loadingcolor : "#17a2b8",
+                expanded: true,
+                scale:{x: 1, y:1, z: 1},
+                position:{x: 0, y: 0, z: 0 },
+                cameraPosition:{x: 0, y: 0, z: 0 },
+                cameraRotation:{x: 0, y: 0, z: 0 },
+
+                length:0,
+                width:0,
+                height:0,
+                volume:0,
+                surface:0,
+                rotation: {
+                    x: -Math.PI / 10,
+                    y: 0,
+                    z: 0
+                },
+                materials: [],
+                materials2: [
+                    {
+                        title: 'PLA (FDM)',
+                        tooltip: 'اقتصادی ترین متریال پرینت سه بعدی، مناسب جهت نمونه سازی، ضعف این متریال عدم توانایی تحمل دما می‌باشد',
+                        max_intergration : [450,450,450]
+                    },
+                    {
+                        title: 'ABS (FDM)',
+                        tooltip: 'مناسب جهت تولید نمونه‌های فانکشنال، قابلیت تحمل دمای ShortTerm تا 100 درجه سانتی گراد',
+                        max_intergration : [300,300,300]
+                    },
+                    {
+                        title: 'NYLON (FDM)',
+                        tooltip: 'پلیمر مهندسی انعطاف پذیر با قابلیت تحمل و خواص ضد ضربه',
+                        max_intergration : [150,150,200]
+                    },
+                    // new
+                    {
+                        title: 'HIPS (FDM)',
+                        tooltip: 'اقتصادی ترین متریال پرینت سه بعدی، مناسب جهت نمونه سازی، ضعف این متریال عدم توانایی تحمل دما می‌باشد',
+                        max_intergration : [300,300,300]
+                    },
+                    // new
+                    {
+                        title: 'PVA (FDM)',
+                        tooltip: 'اقتصادی ترین متریال پرینت سه بعدی، مناسب جهت نمونه سازی، ضعف این متریال عدم توانایی تحمل دما می‌باشد',
+                        max_intergration : [100,100,100]
+                    },
+                    // new
+                    {
+                        title: 'TPU (FDM)',
+                        tooltip: 'اقتصادی ترین متریال پرینت سه بعدی، مناسب جهت نمونه سازی، ضعف این متریال عدم توانایی تحمل دما می‌باشد',
+                        max_intergration : [100,100,100]
+                    },
+                    // new
+                    {
+                        title: 'PLA (WSS)',
+                        tooltip: 'اقتصادی ترین متریال پرینت سه بعدی، مناسب جهت نمونه سازی، ضعف این متریال عدم توانایی تحمل دما می‌باشد',
+                        max_intergration : [350,350,350]
+                    },
+                    // new
+                    {
+                        title: 'ABS (WSS)',
+                        tooltip: 'اقتصادی ترین متریال پرینت سه بعدی، مناسب جهت نمونه سازی، ضعف این متریال عدم توانایی تحمل دما می‌باشد',
+                        max_intergration : [300,300,300]
+                    },
+                    {
+                        title: 'PA12 (SLS)',
+                        tooltip: 'بهترین متریال پلیمری پرینت سه بعدی از نظر قابلیت تست‌های فانکشنال، مقاوم به ضربه، مقاوم به دما تا 140 درجه سانتی گراد به صورت ShortTerm',
+                        max_intergration : [300,300,300]
+                    },
+                    {
+                        title: 'Grey Resin (PolyJet)',
+                        tooltip: 'دقت ابعادی و صافی سطح خیلی بالا، قابلیت تولید جزئیات بالا، استحکام بالا و مقاومت به ضربه پایین',
+                        max_intergration : [100,100,60]
+                    },
+                    {
+                        title: 'White Resin (SLA)',
+                        tooltip: 'مناسبت برای نمونه سازی بدون بار گذاری های مکانیکی و حرارتی، دقت ابعادی و صافی سطح بالا، مقاومت به ضربه پایین، پایداری پایین در طول زمان',
+                        max_intergration : [140,140,170]
+                    },
+                    {
+                        title: 'Clear Resin (SLA)',
+                        tooltip: 'شفاف، مناسب برای نمونه سازی قطعات شفاف، دقت ابعادی بالا، مقاومت به ضربه پایین، عدم پایداری در طول زمان',
+                        max_intergration : [140,140,170]
+                    },
+                    {
+                        title: 'Soft Resin (SLA)',
+                        tooltip: 'مشابه لاستیک، انعطاف پذیر و کشسان، مناسب برای نمونه سازی قطعات لاستیکی یا سیلیکونی',
+                        max_intergration : [140,140,170]
+                    },
+                    {
+                        title: 'Investment Casting Models',
+                        tooltip: 'قابلیت خروج از قالب سرامیکی ریخته‌گری دقیق، مناسب برای ریخته‌گری دقیق قطعات صنعتی (و نه طلاسازی)، بدون نیاز به قالب تزریق موم',
+                        max_intergration : [300,300,300]
+                    },
+                ],
+                colors_polish : [
+                    "مات","براق","دون پاش"
+                ],
+                RAL : [
+                    1,2,3,4,5
+                ],
+                is_advance_setttings : false,
+
+                advance_settings:{
+                    setting1:[5,10,20,50,100],
+                    setting2:[100,200,300],
+                    setting3:[1,2],
+                    setting4:["معمولی","رزولوشن بالا"],
+
+                },
+                MAX_SIZE: 30 * 1024 * 1024,
+                upload_polish_level_A:"",
+                upload_spread_level_B:"",
+            }
+        },
+
+        watch:{
+            allMatrials(new_value,old_value){
+                this.materials = new_value;
+            },
+            volume(new_value,old_value){
+                this.materials= this.allMatrials
+                setTimeout(()=>{
+
+
+                if(this.materials.length==0)
+                    return ;
+                this.selected_colors = this.materials[0].colors
+                this.isAllowAdvanceSettings = this.materials[0].allowAdvanceSettings
+                this.isAllowWatering = this.materials[0].allowWatering
+                this.isAllowColorSpread = this.materials[0].allowColorSpread
+                this.isAllowPolish = this.materials[0].allowPolish
+
+
+
+                this.item.material = this.materials[0].title;
+                this.item.material_color =  this.materials[0].colors[0];
+                this.item.number =  1;
+                this.item.is_integration =  0;
+                this.item.is_watering =  0;
+                this.item.is_polish =  0;
+                this.item.is_color_spread =  0;
+                this.item.is_advance_setting =  0;
+                this.item.polish_level =  "all";
+                this.item.upload_polish_level_A =  "";
+                this.upload_polish_level_A =  "";
+                this.item.spread_level =  "all";
+                this.item.upload_spread_level_B =  "";
+                this.upload_spread_level_B =  "";
+                this.item.color_spread_type = "مات";
+                this.data.color_spread_type = "مات";
+                this.item.density =  0.2;
+                this.item. layer_thickness = 200
+                this.item. outer_layer = 2
+                this.item. resolution =  0.4
+                    this.item.Ral = 1;
+
+                this.item.unit_price =  this.materials[0].min_price;
+                this.data.unit_price =  this.materials[0].min_price;
+
+
+
+                this.item.total_price =  this.calculatePrice(this.item,this.materials[0],"price")
+                this.data.total_price =  this.calculatePrice(this.item,this.materials[0],"price")
+                this.item.lead_time =  this.calculatePrice(this.item,this.materials[0],"time")
+                this.data.lead_time =  this.calculatePrice(this.item,this.materials[0],"time")
+
+                    this.item.width =   this.width;
+                this.item.height = this.height;
+                this.item.length = this.length;
+                this.item.volume = this.volume;
+                this.item.surface = this.surface;
+
+                    let item = this.item;
+                    let index = this.index;
+
+
+                this.$store.dispatch('updateItem' , {
+                    items:item ,
+                    index:index,
+                })
+                },600)
+            },
+            surface(new_value,old_value){
+                this.materials= this.allMatrials
+                setTimeout(()=>{
+
+
+                    if(this.materials.length==0)
+                        return ;
+                    this.selected_colors = this.materials[0].colors
+                    this.isAllowAdvanceSettings = this.materials[0].allowAdvanceSettings
+                    this.isAllowWatering = this.materials[0].allowWatering
+                    this.isAllowColorSpread = this.materials[0].allowColorSpread
+                    this.isAllowPolish = this.materials[0].allowPolish
+
+
+
+                    this.item.material = this.materials[0].title;
+                    this.item.material_color =  this.materials[0].colors[0];
+                    this.item.number =  1;
+                    this.item.is_integration =  0;
+                    this.item.is_watering =  0;
+                    this.item.is_polish =  0;
+                    this.item.is_color_spread =  0;
+                    this.item.is_advance_setting =  0;
+                    this.item.polish_level =  "all";
+                    this.item.upload_polish_level_A =  "";
+                    this.upload_polish_level_A =  "";
+                    this.item.spread_level =  "all";
+                    this.item.upload_spread_level_B =  "";
+                    this.upload_spread_level_B =  "";
+                    this.item.color_spread_type = "مات";
+                    this.data.color_spread_type = "مات";
+                    this.item.density =  0.2;
+                    this.item. layer_thickness = 200
+                    this.item. outer_layer = 2
+                    this.item. resolution =  0.4
+                    this.item.Ral = 1;
+
+                    this.item.unit_price =  this.materials[0].min_price;
+                    this.data.unit_price =  this.materials[0].min_price;
+
+
+
+                    this.item.total_price =  this.calculatePrice(this.item,this.materials[0],"price")
+                    this.data.total_price =  this.calculatePrice(this.item,this.materials[0],"price")
+                    this.item.lead_time =  this.calculatePrice(this.item,this.materials[0],"time")
+                    this.data.lead_time =  this.calculatePrice(this.item,this.materials[0],"time")
+
+                    this.item.width =   this.width;
+                    this.item.height = this.height;
+                    this.item.length = this.length;
+                    this.item.volume = this.volume;
+                    this.item.surface = this.surface;
+
+                    let item = this.item;
+                    let index = this.index;
+
+
+                    this.$store.dispatch('updateItem' , {
+                        items:item ,
+                        index:index,
+                    })
+                },600)
+            }
+        },
+        methods:{
+            showName(str){
+                if( str.length >30 ){
+                    return  str.substr(0, 29) + " ... ";
+                }
+                return str;
+            },
+            showPrice(price){
+                return numeral(price).format('0,0');
+            },
+            calculatePrice(item,material,type){
+
+                let price = 0;let AV5 = 0;let C8 = 0;let C9 = 0;let C10= 0;
+                let AU5 = 0;let AT5= 0;let AS6 = 0;let AQ5= 0;let AR6= 0;
+                let AP5= 0;let J9= 0;let J5= 0;let AM6 = 0;let AO6 = 0;let AQ9 = 0;
+                let AC5 = 0;let AQ10= 0;let AD5 = 0;let AQ11= 0;let AE5 = 0;let AL6 = 0;
+                let AN6 = 0;let AP6 = 0;let AP9 = 0;let AP10 = 0;let AM10 = 0;let AF6 = 0;
+                let AG6 = 0;let AH6 = 0;let AI6 = 0;let AJ6  = 0;let AK6  = 0;let AO9= 0;
+                let AO10=0;let AO11 = 0;let AO12= 0;let AO13 = 0;let AO14= 0;let AC6= 0;
+                let AD6=0;let AE6=0;let AA5= 0;let G5= 0;let Z5= 0;let S5= 0;let W5= 0;
+                let AB5 = 0;let AL10 = 0;let AN9 = 0;let AN10 = 0;let AN11 = 0;let AN12= 0;
+                let AN13= 0;let AN14= 0;let Y6= 0;let H5= 0;let T6= 0;let V6= 0;
+                let AA6= 0;let Z6=0;let S6=0;let W6=0;let AB6 =0;let U5=0;let T5=0;
+                let V5=0;let D5=0;let E5=0;let F5=0;let U6=0;let I10=0;let I5=0;
+                let L5= 0;let AQ6=0;
+
+                C8 =  material.Hour_price
+                C9 =  material.Material_price
+                C10 =  material.min_price
+                J5 =  material.layer_thickness
+                AQ9 =  material.segment_time_ratio_1
+                AQ10 =  material.segment_time_ratio_2
+                AQ11 =  material.segment_time_ratio_3
+                AP9 =  material.segment_gram_ratio_1
+                AP10 =  material.segment_gram_ratio_2
+                AM10 =  material.time_proportion
+
+
+                J9 = item.layer_thickness;
+                I10 = item.density;
+                I5 = material.infill_I5;
+                U6 = material.infill_u6;
+
+                L5 = item.resolution;
+                F5 = item.height;
+                E5 = item.width;
+                D5 = item.length;
+                T5 = item.outer_layer;
+
+
+
+                T6 = material.nozzle_diam_2;
+                V5 = material.shells_number_1;
+                V6 = material.shells_number_2;
+                S5 = material.polymer_density_1;
+                S6 = material.polymer_density_1;
+                W5 = material.extrusion_multiplier_1;
+                W6 = material.extrusion_multiplier_2;
+                H5 = item.surface;
+                console.log("ppppp",H5)
+                if(H5)
+                    H5 = H5.replaceAll(",","")
+               // H5=0;
+
+
+                AL10 =material.gram_proportion;
+                AO9 =material.support_time_ratio_1;
+                AO10 =material.support_time_ratio_2;
+                AO11 =material.support_time_ratio_3;
+                AO12 =material.support_time_ratio_4;
+                AO13 =material.support_time_ratio_5;
+                AO14 =material.support_time_ratio_6;
+
+                AN9 =material.support_gram_ratio_1;
+                AN10 =material.support_gram_ratio_2;
+                AN11 =material.support_gram_ratio_3;
+                AN12 =material.support_gram_ratio_4;
+                AN13 =material.support_gram_ratio_5;
+                AN14 =material.support_gram_ratio_6;
+                G5 = item.volume;
+
+                if(G5)
+                    G5 = G5.replaceAll(",","")
+
+
+
+                Y6 = D5*E5*F5;
+                Z6 = (H5*T6*V6)/1000
+                AA6 = (G5/1000 -Z6)*U6;
+                AB5 = 2*4*V5*0.2*4*(D5+E5+F5)/3000
+                AB6 = 2*4*V6*0.2*4*(D5+E5+F5)/3000
+                U5 = 0.2*I5/I10;
+
+                Z5=H5*T5*V5/1000
+                AA5=(5300/1000-Z5)*U5
+
+                AE6 =AB6*W6*S6
+                AD6 =AA6*S6*W6
+                if(AA6<0)
+                    AD6 =(0)*S6*W6
+
+                AC6 =Z6*S6*W6
+                if(AA6<0)
+                    AC6 =G5/1000*S6*W6
+
+                AP6 =AP9*AC6+AP10*AD6
+                AL6=AL10*AP6
+                AE5 =AB5*W5*S5
+                AQ5 =(AQ9*AC5+AQ10*AD5+AQ11*AE5)*J9/J5
+                AF6=Math.pow(G5/Y6,1)
+                AG6= Math.pow((H5*T6*V6+G5)/Y6,1)
+                AH6=Math.pow(H5/G5,0.5)
+                AI6=Math.pow(G5,0.5)
+                AJ6 =Math.pow(H5/G5,-0.3)
+                AK6=Math.pow(G5/(Y6-G5),-0.3)
+                AO6 =(AF6*AO9+ AG6*AO10+ AH6*AO11+ AI6*AO12+ AJ6*AO13+ AK6*AO14)
+                AQ6 =(AQ9*AC6+AQ10*AD6+AQ11*AE6)
+                AM6 =AM10*AQ6
+                AS6 =0
+                if((J9/J5)*(AM6-AO6*AQ6)/(AO6+1)>0)
+                AS6 =(J9/J5)*(AM6-AO6*AQ6)/(AO6+1)
+
+
+
+
+
+
+
+                AU5 =(AS6+AQ5)*L5
+
+
+                AN6 =(AF6*AN9+ AG6*AN10+ AH6*AN11+ AI6*AN12+ AJ6*AN13+ AK6*AN14)
+
+                AD5=(AA5)*S5*W5
+                if(AA5<0)
+                    AD5=(0)*S5*W5
+
+                AC5 =(Z5)*S5*W5
+                if(AA5<0)
+                    AC5 =G5/1000*S5*W5
+                AP5 =AP9*AC5+AP10*AD5
+
+                AR6 =0
+                if((AL6-AN6*AP6)/(AN6+1)>0)
+                    AR6 =(AL6-AN6*AP6)/(AN6+1)
+                AT5=AR6+AP5
+                AV5=C10
+                if(C8*AU5+2*C9*AT5>C10)
+                AV5=C8*AU5+2*C9*AT5
+
+                // 150  + 2*250*
+
+
+
+                if(type=="price") {
+
+                    console.log("start process price ....")
+                    console.log("aaaa_C8", C8)
+                    console.log("aaaa_C9", C9)
+                    console.log("aaaa_C10", C10)
+                    console.log("aaaa_C8*AU5+2*C9*AT5", C8*AU5+2*C9*AT5)
+                    console.log("aaaa_AV5=MAX(C8*AU5+2*C9*AT5,C10)", AV5)
+                    console.log("aaaa_AR6", AR6)
+                    console.log("aaaa_AP5", AP5 )
+                    console.log("aaaa_AT5=AR6+AP5", AR6+AP5 )
+                    console.log("aaaa_J9", J9 )
+                    console.log("aaaa_J5", J5 )
+                    console.log("aaaa_L5", L5 )
+                    console.log("aaaa_AM6", AM6 )
+                    console.log("aaaa_AO6", AO6 )
+                    console.log("aaaa_AQ6", AQ6 )
+                    console.log("aaaa_(J9/J5)*(AM6-AO6*AQ6)/(AO6+1)", (J9/J5)*(AM6-AO6*AQ6)/(AO6+1) )
+                    console.log("aaaa_AS6 =IF((J9/J5)*(AM6-AO6*AQ6)/(AO6+1)>0,(J9/J5)*(AM6-AO6*AQ6)/(AO6+1),0)",AS6 )
+                    console.log("aaaa_AQ5 =(AQ9*AC5+AQ10*AD5+AQ11*AE5)*J9/J5",AQ5 )
+                    console.log("aaaa_AU5 =(AS6+AQ5)*L5", AU5 +'==>'+(AS6+AQ5)*L5   )
+                    console.log("aaaa_AR6 =IF((AL6-AN6*AP6)/(AN6+1)>0,(AL6-AN6*AP6)/(AN6+1),0)", AR6   )
+                    console.log("aaaa_AP5 =AP9*AC5+AP10*AD5",AP5 +"=="+AP9*AC5+AP10*AD5)
+                    console.log("aaaa_AM6 =AM10*AQ6",AM6  +"=="+AM10*AQ6)
+                    console.log("aaaa_AO6 =MMULT(AF6:AK6,AO9:AO14)=(AF6*AO9+ AG6*AO10+ AH6*AO11+ AI6*AO12+ AJ6*AO13+ AK6*AO14)",AO6)
+                    console.log("aaaa_AQ6 =(AQ9*AC6+AQ10*AD6+AQ11*AE6)",AQ6  )
+                    console.log("aaaa_AQ9",AQ9)
+                    console.log("aaaa_AC5 =IF(AA5<0,G5/1000,Z5)*S5*W5",AC5 )
+                    console.log("aaaa_AA5",AA5)
+                    console.log("aaaa_(G5/1000)*S5*W5",(G5/1000)*S5*W5)
+                    console.log("aaaa_(Z5)*S5*W5",(Z5)*S5*W5);
+                    console.log("aaaa_AQ10",AQ10);
+                    console.log("aaaa_AD5=IF(AA5<0,0,AA5)*S5*W5",AD5);
+                    console.log("aaaa_AQ11",AQ11);
+                    console.log("aaaa_AE5 =AB5*W5*S5",AE5 );
+                    console.log("aaaa_AB5",AB5);
+                    console.log("aaaa_W5",W5);
+                    console.log("aaaa_S5",S5);
+                    console.log("aaaa_AL6=AL10*AP6",AL6);
+                    console.log("aaaa_AL10",AL10);
+                    console.log("aaaa_AN6 =MMULT(AF6:AK6,AN9:AN14) )=(AF6*AN9+ AG6*AN10+ AH6*AN11+ AI6*AN12+ AJ6*AN13+ AK6*AN14)",AN6);
+                     console.log("aaaa_AP6 =AP9*AC6+AP10*AD6",AP6 )
+                     console.log("aaaa_AP9",AP9)
+                     console.log("aaaa_AC6",AC6)
+                     console.log("aaaa_AP10",AP10)
+                     console.log("aaaa_AD6",AD6)
+                     console.log("aaaa_AP9",AP9)
+                     console.log("aaaa_AP10",AP10)
+                     console.log("aaaa_AD6",AD6)
+                     console.log("aaaa_AM10",AM10)
+                     console.log("aaaa_AF6=POWER(G5/Y6,1)",AF6)
+                     console.log("aaaa_AG6= POWER((H5*T6*V6+G5)/Y6,1)",AG6)
+                     console.log("aaaa_AH6=POWER(H5/G5,0.5)",AH6)
+                     console.log("aaaa_AI6=POWER(G5,0.5)",AI6)
+                     console.log("aaaa_AJ6 =POWER(H5/G5,-0.3)",AJ6)
+                     console.log("aaaa_AK6=POWER(G5/(Y6-G5),-0.3)",AK6)
+                     console.log("aaaa_AO9",AO9)
+                     console.log("aaaa_AO10",AO10)
+                     console.log("aaaa_AO11",AO11)
+                     console.log("aaaa_AO12",AO12)
+                     console.log("aaaa_AO13",AO13)
+                     console.log("aaaa_AO14",AO14)
+                     console.log("aaaa_AC6 =IF(AA6<0,G5/1000,Z6)*S6*W6",AC6 )
+                     console.log("aaaa_AD6 =IF(AA6<0,0,AA6)*S6*W6",AD6 )
+                     console.log("aaaa_AE6 =AB6*W6*S6",AE6  )
+                     console.log("aaaa_AA5=(G5/1000-Z5)*U5",AA5 )
+                     console.log("aaaa_G5",G5 )
+                     console.log("aaaa_Z5=H5*T5*V5/1000",Z5 )
+                     console.log("aaaa_S5",S5 )
+                     console.log("aaaa_W5=Extrusion multiplier ",W5 )
+                     console.log("aaaa_AB5 =2*4*V5*0.2*4*(D5+E5+F5)/3000 ",AB5  )
+                     console.log("aaaa_AL10 ",AL10  )
+                     console.log("aaaa_AN9 ",AN9  )
+                     console.log("aaaa_AN10 ",AN10  )
+                     console.log("aaaa_AN11 ",AN11 )
+                     console.log("aaaa_AN12 ",AN12  )
+                     console.log("aaaa_AN13 ",AN13  )
+                     console.log("aaaa_AN14 ",AN14  )
+                     console.log("aaaa_Y6 =D5*E5*F5 ",Y6   )
+                     console.log("aaaa_H5=Part Surface ",H5  )
+                     console.log("aaaa_T6=Shells Number 2 ",T6  )
+                     console.log("aaaa_V6=Nozzle Diam. 2 ",V6  )
+                     console.log("aaaa_AA6=(G5/1000-Z6)*U6 ",AA6 )
+                     console.log("aaaa_Z6=H5*T6*V6/1000 ",Z6 )
+                     console.log("aaaa_S6=Polymer Density 2",S6 )
+                     console.log("aaaa_W6",W6 )
+                     console.log("aaaa_AB6 =2*4*V6*0.2*4*(D5+E5+F5)/3000",AB6)
+                     console.log("aaaa_U5=0.2*I5/I10",U5)
+                    console.log("aaaa_T5",T5)
+                     console.log("aaaa_V5=Nozzle Diam. 1",V5)
+                     console.log("aaaa_D5=Part Length ",D5)
+                     console.log("aaaa_E5=Part Width  ",E5 )
+                     console.log("aaaa_F5=Part Height   ",F5 )
+                     console.log("aaaa_U6=infill  ",U6 )
+                     console.log("aaaa_I5   ",I5  )
+                     console.log("aaaa_I10   ",I10  )
+
+
+
+                }
+                price = Math.round(AV5/1000)*1000
+
+                 let time = Math.round(AU5/18)
+
+                if(type=="price")
+                return price;
+                else
+                    return time
+            },
+            fileExtension(file){
+
+                return file.substr(file.lastIndexOf('.') + 1).toLocaleLowerCase();
+                return file.name.substr(file.name.lastIndexOf('.') + 1).toLocaleLowerCase();
+            },
+            getRef(index){
+                return "model"+index;
+            },
+            getSrc(src){
+
+                return src;
+             // return "http://127.0.0.1:8000/uploads/files/orders/2020/12/16/1608124775.stl";
+            },
+            rotate () {
+                this.rotation.z += 0.01;
+                requestAnimationFrame( this.rotate );
+            },
+            async onLoad(index) {
+             
+
+
+
+
+                this.rotate();
+                const object = this.$refs["model"+index].object;
+
+                let this_page = this;
+
+                let len = this.getSize( object ).x; // Vector3 {x: 40.75, y: 30.500001907348633, z: 30.5}
+                let wid = this.getSize( object ).y; // Vector3 {x: 40.75, y: 30.500001907348633, z: 30.5}
+                let hei = this.getSize( object ).z; // Vector3 {x: 40.75, y: 30.500001907348633, z: 30.5}
+                let val = 0;
+                let area = 0;
+
+
+                var scene = new THREE.Scene();
+
+                var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 1000);
+
+                camera.position.setScalar(20);
+                var renderer = new THREE.WebGLRenderer();
+
+                renderer.setClearColor(0x404040);
+              //  renderer.setSize(window.innerWidth, window.innerHeight);
+               //
+                var manager = new THREE.LoadingManager();
+                var loader = new THREE.OBJLoader( manager );
+
+                if(this.fileExtension(this.item.title)=='stl'){
+                    loader = new STLLoader( );
+                }
+
+                await loader.load(this.item.src, async (object)=>  {
+
+
+
+                    if(this_page.fileExtension(this_page.item.title)=='stl'){
+                        val = await this_page.getVolume(object);
+                        area = await this_page.getArea(object);
+
+                    }else if(this_page.fileExtension(this_page.item.title)=='obj'){
+                        val = await  this_page.getVolume(object.children[0].geometry);
+                         area = await  this_page.getArea(object.children[0].geometry);
+                    }
+                    setTimeout(()=>{
+                        for(var i=0;i<=index;i++) {
+
+                            this_page.length = Number((len).toFixed(1));
+
+                            this_page.width= Number((wid).toFixed(1));
+                            this_page.height = Number((hei).toFixed(1));
+                            this_page.volume =numeral(Number((val).toFixed(1))).format('0,0') ;
+                            this_page.surface =numeral(Number((area).toFixed(1))).format('0,0') ;
+
+
+                            let item = this_page.item;
+                            let index = this_page.index;
+
+
+                            item.width = this_page.width;
+                            item.height = this_page.height;
+                            item.length = this_page.length;
+                            item.volume = this_page.volume;
+
+                            this_page.$store.dispatch('updateItem' , {
+                                items: item ,
+                                index
+                            })
+
+
+                        }
+
+                    },200)
+
+                });
+
+
+
+              if(this_page.getItems.length-1 ==index){
+                  setTimeout(()=>{
+                      this.$store.dispatch('changeUploaded' , {
+                          isUploaded:false ,
+                      })
+
+                  },400)
+              }
+
+
+
+
+
+
+
+
+
+
+// check with known volume:
+                var hollowCylinderGeom = new THREE.LatheBufferGeometry([
+                    new THREE.Vector2(1, 0),
+                    new THREE.Vector2(2, 0),
+                    new THREE.Vector2(2, 2),
+                    new THREE.Vector2(1, 2),
+                    new THREE.Vector2(1, 0)
+                ], 90).toNonIndexed();
+
+            },
+            getSize( object ) {
+                const box = new Box3();
+                box.setFromObject( object );
+                return box.getSize();
+            },
+            getVolume(geometry) {
+
+                let position = geometry.attributes.position;
+                let faces = position.count / 3;
+                let sum = 0;
+                let p1 = new THREE.Vector3(),
+                    p2 = new THREE.Vector3(),
+                    p3 = new THREE.Vector3();
+                for (let i = 0; i < faces; i++) {
+                    p1.fromBufferAttribute(position, i * 3 + 0);
+                    p2.fromBufferAttribute(position, i * 3 + 1);
+                    p3.fromBufferAttribute(position, i * 3 + 2);
+                    sum += this.signedVolumeOfTriangle(p1, p2, p3);
+
+                }
+
+                return sum;
+
+            },
+            signedVolumeOfTriangle(p1, p2, p3) {
+                return p1.dot(p2.cross(p3)) / 6.0;
+            },
+            getArea(geometry){
+
+                let area = 0.0;
+                let position = geometry.attributes.position;
+                let faces = position.count / 3;
+                let p1 = new THREE.Vector3(),
+                    p2 = new THREE.Vector3(),
+                    p3 = new THREE.Vector3();
+                for (let i = 0; i < faces; i++) {
+                    p1.fromBufferAttribute(position, i * 3 + 0);
+                    p2.fromBufferAttribute(position, i * 3 + 1);
+                    p3.fromBufferAttribute(position, i * 3 + 2);
+                    area += this.AreaOfTriangle(p1, p2, p3);
+
+                }
+                return area;
+            },
+            AreaOfTriangle(p1, p2, p3){
+                var v1 = new THREE.Vector3();
+                var v2 = new THREE.Vector3();
+                // Calculate the vector of two edges by two vertex coordinates
+                v1 = p1.clone().sub(p2);
+                v2 = p1.clone().sub(p3);
+
+                var v3 = new THREE.Vector3();
+                // Triangle area calculation
+                v3.crossVectors(v1,v2);
+                var s = v3.length()/2;
+                return s
+            },
+            changeMaterial(item) {
+
+                this.selected_colors = item.colors
+                this.data.material_color = item.colors[0]
+                this.isAllowAdvanceSettings = item.allowAdvanceSettings
+                this.isAllowWatering = item.allowWatering
+                this.isAllowColorSpread = item.allowColorSpread
+                this.isAllowPolish = item.allowPolish
+                this.ErrorExceedItegration(item.max_intergration,item.title)
+
+
+                this.item.material = item.title;
+                this.item.material_color = item.colors[0]
+
+                let new_item =  this.item;
+                let index =  this.index;
+
+                this.$store.dispatch('updateItem' , {
+                    items:new_item ,
+                    index:index,
+                })
+                //this.calculatePrice(this.item,item)
+
+            },
+            changeMaterialColor(item) {
+
+             this.item.material_color = item.target.value
+             this.data.material_color = item.target.value
+
+
+                let new_item =  this.item;
+                let index =  this.index;
+                this.$store.dispatch('updateItem' , {
+                    items:new_item ,
+                    index:index,
+                })
+
+            },
+            changeNumber(event){
+
+                this.data.number = event;
+
+                let material = {};
+                this.materials.map((item)=>{
+                    if(item.title==this.item.material)
+                        material = item;
+                })
+
+
+
+
+                this.item.number = event ;
+                this.item.total_price =  event* this.calculatePrice(this.item,material,"price")
+                this.data.total_price =  event* this.calculatePrice(this.item,material,"price")
+                this.item.lead_time =  event* this.calculatePrice(this.item,material,"price")
+                this.data.lead_time =   event*this.calculatePrice(this.item,material,"price")
+
+                let new_item =  this.item;
+                let index =  this.index;
+                this.$store.dispatch('updateItem' , {
+                    items:new_item ,
+                    index:index,
+                })
+
+
+            },
+            changeWatering(e) {
+                this.item.is_watering = 0;
+
+                if (e.target.checked)
+                    this.item.is_watering = 1;
+
+                let new_item =  this.item;
+                let index =  this.index;
+                this.$store.dispatch('updateItem' , {
+                    items:new_item ,
+                    index:index,
+                })
+
+
+
+            },
+            checkPolish(e){
+                this.item.is_polish =  0;
+                this.is_polish = !this.is_polish;
+                if(e.target.value)
+                    this.item.is_polish =  1;
+
+                if(this.item.is_polish ==0){
+                    this.item.polish_level =  "all";
+                    this.item.upload_polish_level_A =  "";
+                    this.upload_polish_level_A =  "";
+                }
+
+                let new_item =  this.item;
+                let index =  this.index;
+                this.$store.dispatch('updateItem' , {
+                    items:new_item ,
+                    index:index,
+                })
+            },
+            changePolish(e){
+
+
+                this.item.polish_level = e.target.value;
+                if(e.target.value=="all"){
+                    this.item.upload_polish_level_A = "";
+                    this.upload_polish_level_A = "";
+                }
+
+                let new_item =  this.item;
+                let index =  this.index;
+                this.$store.dispatch('updateItem' , {
+                    items:new_item ,
+                    index:index,
+                })
+            },
+
+            changeColorSpread(e){
+
+                this.item.spread_level = e.target.value;
+                if(e.target.value=="all"){
+                    this.item.upload_spread_level_B = "";
+                    this.upload_spread_level_B = "";
+                }
+
+
+                let new_item =  this.item;
+                let index =  this.index;
+
+
+                this.$store.dispatch('updateItem' , {
+                    items:new_item ,
+                    index:index,
+                })
+            },
+            checkColorSpread(e){
+                this.is_color_spread = !this.is_color_spread;
+                this.item.is_color_spread =  0;
+
+                if(e.target.value)
+                this.item.is_color_spread =  1;
+
+                this.item.color_spread_type = "مات";
+                this.data.color_spread_type = "مات";
+                this.item.Ral = this.RAL[0];
+                this.data.Ral = this.RAL[0];
+
+
+                if(this.item.is_color_spread ==0){
+                    this.item.spread_level =  "all";
+                    this.item.upload_spread_level_B =  "";
+                }
+
+                let new_item =  this.item;
+                let index =  this.index;
+                this.$store.dispatch('updateItem' , {
+                    items:new_item ,
+                    index:index,
+                })
+
+            },
+            changeTypeColorSpread(e){
+
+                this.item.color_spread_type = e.target.value;
+
+
+
+                let new_item =  this.item;
+                let index =  this.index;
+
+
+                this.$store.dispatch('updateItem' , {
+                    items:new_item ,
+                    index:index,
+                })
+            },
+            changeRal(e){
+
+                this.item.Ral = e.target.value;
+
+
+
+                let new_item =  this.item;
+                let index =  this.index;
+
+
+                this.$store.dispatch('updateItem' , {
+                    items:new_item ,
+                    index:index,
+                })
+            },
+
+            ErrorExceedItegration(max_integration,title){
+                if(this.length>max_integration[0] )
+                    this.$toast.error(`برای متریال ${title} طول نمی تواند بیش از ${max_integration[0]} باشد `, {position: 'bottom-left'})
+                if(this.width>max_integration[1])
+                    this.$toast.error(`برای متریال ${title} عرض نمی تواند بیش از ${max_integration[1]}  باشد `, {position: 'bottom-left'})
+                if(this.height>max_integration[2])
+                    this.$toast.error(`برای متریال ${title} ارتفاع نمی تواند بیش از ${max_integration[2]} باشد `, {position: 'bottom-left'})
+
+            },
+            CheckIntegration(e){
+                 let material = this.item.material;
+                 let length = this.length;
+                 let width = this.width;
+                 let height = this.height;
+
+                 let selected_matrial = {};
+                 this.materials.map((item)=>{
+                     if(item.title==material)
+                         selected_matrial = item
+                 })
+
+
+                 let max_length = selected_matrial.max_intergration[0]
+                 let max_width = selected_matrial.max_intergration[1]
+                 let max_height = selected_matrial.max_intergration[2]
+
+                this.item.is_integration =  0;
+
+
+
+
+                if(this.data.integration)
+                    this.data.integration = false
+                else {
+                    if(length>max_length || width>max_width || height>max_height) {
+                        e.target.checked = false
+                        if (length > max_length)
+                            this.$toast.error(`برای متریال ${material} طول نمی تواند بیش از 450 باشد `, {position: 'bottom-left'})
+                        if (width > max_width)
+                            this.$toast.error(`برای متریال ${material} عرض نمی تواند بیش از 450 باشد `, {position: 'bottom-left'})
+                        if (height > max_height)
+                            this.$toast.error(`برای متریال ${material} ارتفاع نمی تواند بیش از 450 باشد `, {position: 'bottom-left'})
+                        return;
+                    }
+                    this.data.integration =true;
+                }
+
+                if(e.target.value)
+                    this.item.is_integration =  1;
+
+                let new_item =  this.item;
+                let index =  this.index;
+                this.$store.dispatch('updateItem' , {
+                    items:new_item ,
+                    index:index,
+                })
+
+            },
+            checkAdvanceSetting(e){
+                this.is_advance_setttings = !this.is_advance_setttings
+                this.data.advance_settings = this.is_advance_setttings
+                    this.data.advance_setting1= 20
+                    this.data.advance_setting2 = 200
+                    this.data.advance_setting3 = 2
+                    this.data.advance_setting4 = "معمولی"
+
+                this.item.density =   this.data.advance_setting1/100;
+                this.item. layer_thickness = this.data.advance_setting2
+                this.item. outer_layer = this.data.advance_setting3
+                this.item. resolution =  this.data.advance_setting4=="معمولی"?0.4:0.2;
+
+
+                this.item.is_advance_setting =  0;
+
+                if(e.target.checked)
+                    this.item.is_advance_setting =  1;
+
+                let new_item =  this.item;
+                let index =  this.index;
+                this.$store.dispatch('updateItem' , {
+                    items:new_item ,
+                    index:index,
+                })
+
+
+            },
+            changeAdvanceSettings(){
+                this.item.density =   this.data.advance_setting1/100;
+                this.item. layer_thickness = this.data.advance_setting2
+                this.item. outer_layer = this.data.advance_setting3
+                this.item. resolution =  this.data.advance_setting4=="معمولی"?0.4:0.2;
+
+                
+                this.item.total_price =  this.calculatePrice(this.item,this.materials[0],"price")
+                this.data.total_price =  this.calculatePrice(this.item,this.materials[0],"price")
+                this.item.lead_time =  this.calculatePrice(this.item,this.materials[0],"time")
+                this.data.lead_time =  this.calculatePrice(this.item,this.materials[0],"time")
+
+                let new_item =  this.item;
+                let index =  this.index;
+
+                this.$store.dispatch('updateItem' , {
+                    items:new_item ,
+                    index:index,
+                })
+            },
+            async uploadFileIndex (e,type) {
+
+
+
+
+                let files = e.dataTransfer ? e.dataTransfer.files : e.target.files
+
+
+
+                if (!files) return;
+                await ([...files]).forEach((file,index) => {
+                    const ext = file.name.substr(file.name.lastIndexOf('.') + 1).toLocaleLowerCase()
+
+                  /*  if (!this.EXTS.includes(ext))
+                        return this.$toast.error('فرمت فایل مورد قبول نیست'+ext, {
+                            position: 'bottom-left'
+                        })*/
+
+
+                    if (this.totalSize + file.size > this.MAX_SIZE)
+                        return this.$toast.error('حجم فایل مورد نظر بیش از اندازه مجاز است.', {
+                            position: 'bottom-left'
+                        })
+
+                    if (1 || file.size <= this.MAX_SIZE) {
+
+
+
+
+                        let items =file;
+
+
+
+                        let reader = new FileReader();
+
+                        reader.onload =async (e)=>{
+
+                            //  await this.uploaded
+                            //await this.$nextTick()
+                            let item ={file:file,src: e.target.result};
+
+
+
+
+                            if(type=="polish"){
+                                this.item.upload_polish_level_A =  item.file;
+                                this.upload_polish_level_A =  item.src;
+                            } else{
+                                this.item.upload_spread_level_B =  item.file;
+                                this.upload_spread_level_B =  item.src;
+                            }
+
+
+                            let new_item =  this.item;
+                            let index =  this.index;
+                            this.$store.dispatch('updateItem' , {
+                                items:new_item ,
+                                index:index,
+                            })
+
+
+
+
+                        }
+
+
+                        reader.readAsDataURL(files[index]);
+
+
+
+
+
+                    }
+
+
+
+
+
+                });
+
+
+
+            }
+
+
+        }
+    }
+</script>
+
+<style scoped>
+    .col-md-3{
+        float: right;
+    }
+    .border-left{
+        border-left: 1px solid #111111;
+    }
+    .blue-color{
+        color:#00A9E1;
+    }
+    .label-m3{top: -12px;right: -3px}
+    .show-small-file{
+        height: 200px;
+        width: 200px;
+        border-radius: 4px;
+        display: inline-block;
+        overflow: hidden;
+
+    }
+    .show-small-file  .show-canvas {   height: 200px;   width: 200px;}
+    .show-small-file  .show-canvas canvas{   height: 200px;   width: 200px;}
+    .show-small-file  .show-canvas canvas:visited{  border:none!important;}
+    .show-small-file  div{  border:none!important;}
+    .show-small-file  div:visited{  border:none!important;}
+    .cursor-pointer{
+        cursor: pointer;
+    }
+    .text-green{
+        color:green;
+    }
+    .border-price{
+        border-radius: 3px;
+        border:1px solid #eeeeee;
+    }
+    .IZ-select__item div{
+        height: 40px;width: 100%;
+    }
+
+
+</style>
