@@ -1,7 +1,7 @@
 - 👋 Hi, I’m @mostafa8722
 - 👀 I’m interested in react js ,next js , nuxt js , vue js , laravel , node js , flutter , react native , java android
 - 🌱 I’m currently learning flutter and react native
-- 💞️ I’m looking to collaborate on android flutter react native , laravel , node js
+- 💞️ I’m looking forward to collaborating on Android Flutter ,React native , laravel , node js
 - 📫 How to reach me mostafa.8722@gmail.com
 
 <!---
