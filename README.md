@@ -1,8 +1,23 @@
-- 👋 Hi, I’m Full stack Developer
-- 👀 I’m interested in react js ,next js , nuxt js , vue js , laravel , node js , flutter , react native , java android
-- 🌱 I’m currently learning flutter and react native
-- 💞️ I’m looking forward to collaborating on Android Flutter ,React native , laravel , node js
-- 📫 How to reach me mostafa.8722@gmail.com
+💻 Full-stack developer focused on clean architecture & performance
+⚙️ Working with Laravel for robust backend systems
+⚡ Building fast, SEO-friendly frontends with Next.js
+🤖 Exploring AI integrations in web applications
+📫 How to reach me mostafa.8722@gmail.com
+
+🖥️ Backend
+PHP / Laravel
+RESTful API Design
+MySQL / PostgreSQL
+Authentication (Sanctum, JWT)
+🌐 Frontend
+Next.js / React
+JavaScript / TypeScript
+Tailwind CSS
+⚙️ Tools & DevOps
+Git & GitHub
+Docker (learning / improving)
+Firebase (Realtime features)
+CI/CD (in progress)
 
 <!---
 mostafa8722/mostafa8722 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
